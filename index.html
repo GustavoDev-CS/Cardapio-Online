@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Açaí Porreta - Cardápio Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Define a fonte Inter como padrão */
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+        
+        /* Cores personalizadas para o tema do açaí */
+        .bg-acai-purple {
+            background: #5A2D82;
+        }
+        
+        .text-acai-yellow {
+            color: #FFD700;
+        }
+        
+        .border-acai-yellow {
+            border-color: #FFD700;
+        }
+        
+        .shadow-acai {
+            box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Melhorias no card do produto */
+        .product-card {
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* Melhorias nos botões */
+        .btn-primary {
+            background-color: #5A2D82;
+            border: none;
+        }
+        
+        /* Scroll suave */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Efeito de carregamento */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Estilo do modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover {
+            color: black;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center py-4 px-4">
+
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <div class="mb-4">
+                <div class="mx-auto w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-2xl">🛒</span>
+                </div>
+            </div>
+            <p id="modalMessage" class="text-lg text-gray-800 mb-6 leading-relaxed"></p>
+            <button onclick="closeModal()" class="bg-purple-500 text-white font-bold py-3 px-6 rounded-full">
+                Fechar
+            </button>
+        </div>
+    </div>
+
+    <header class="w-full max-w-6xl bg-acai-purple text-white p-6 rounded-xl shadow-acai mb-6 text-center">
+        <img src="logo.png" alt="logo">
+    </header>
+
+    <section id="initialOptionsSection" class="w-full max-w-4xl bg-white p-8 rounded-xl shadow-acai mb-6 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Bem-vindo ao nosso cardápio!</h2>
+        <p class="text-gray-600 mb-8 text-lg">Escolha como deseja receber seu pedido:</p>
+        <div class="flex flex-col md:flex-row justify-center gap-6">
+            <button id="deliveryButton" class="bg-green-500 text-white font-bold py-4 px-8 rounded-full shadow-lg">
+                <span class="mr-2">🚚</span>Fazer Pedido (Delivery)
+            </button>
+            <button id="pickupButton" class="bg-blue-500 text-white font-bold py-4 px-8 rounded-full shadow-lg">
+                <span class="mr-2">🏪</span>Retirar na Loja
+            </button>
+        </div>
+    </section>
+
+    <main id="menuSelectionSection" class="w-full max-w-6xl bg-white p-8 rounded-xl shadow-acai mb-6 hidden">
+        <h2 class="text-4xl font-bold text-gray-800 mb-8 text-center">Escolha seu Açaí</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="product-card bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-4">
+                <img src="Açaí Floresta Negra.jpg" alt="Açaí Floresta Negra" class="rounded-lg shadow-md">
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-2">Açaí Floresta Negra</h3>
+                    <p class="text-gray-700 mb-3 leading-relaxed">Açaí, leite em pó, leite condensado, raspas de chocolate, creme de leite, morango e cobertura.</p>
+                    <p class="text-xl text-gray-700 font-semibold">A partir de R$ 25,00</p>
+                </div>
+                <div class="quantity-controls flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center bg-gray-100 rounded-full shadow-md">
+                        <button class="quantity-control-btn minus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-floresta-negra">-</button>
+                        <input type="number" value="1" min="1" class="w-16 text-center border-none bg-transparent font-semibold" id="quantity-acai-floresta-negra" readonly>
+                        <button class="quantity-control-btn plus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-floresta-negra">+</button>
+                    </div>
+                    <button class="btn-primary text-white font-bold py-3 px-6 rounded-full add-to-cart-btn shadow-lg" data-name="Açaí Floresta Negra" data-price="25.00" data-quantity-id="quantity-acai-floresta-negra">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-4">
+                <img src="Açaí Furação Ivan Batido.jpg" alt="Açaí Furação Ivan Batido" class="rounded-lg shadow-md">
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-2">Açaí Furação Ivan Batido</h3>
+                    <p class="text-gray-700 mb-3 leading-relaxed">Açaí, leite em pó, amendoim, guaraná, pó de catuaba, ovo de codorna, pó de miratã e pó nó de cachorro.</p>
+                    <p class="text-xl text-gray-700 font-semibold">A partir de R$ 25,00</p>
+                </div>
+                <div class="quantity-controls flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center bg-gray-100 rounded-full shadow-md">
+                        <button class="quantity-control-btn minus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-furacao-ivan">-</button>
+                        <input type="number" value="1" min="1" class="w-16 text-center border-none bg-transparent font-semibold" id="quantity-acai-furacao-ivan" readonly>
+                        <button class="quantity-control-btn plus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-furacao-ivan">+</button>
+                    </div>
+                    <button class="btn-primary text-white font-bold py-3 px-6 rounded-full add-to-cart-btn shadow-lg" data-name="Açaí Furação Ivan Batido" data-price="25.00" data-quantity-id="quantity-acai-furacao-ivan">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-4">
+                <img src="Açaí Havaianos.jpg" alt="Açaí Havaianos" class="rounded-lg shadow-md">
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-2">Açaí Havaianos</h3>
+                    <p class="text-gray-700 mb-3 leading-relaxed">Açaí, banana, maçã, abacate, abacaxi, mamão e kiwi.</p>
+                    <p class="text-xl text-gray-700 font-semibold">A partir de R$ 25,00</p>
+                </div>
+                <div class="quantity-controls flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center bg-gray-100 rounded-full shadow-md">
+                        <button class="quantity-control-btn minus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-havaianos">-</button>
+                        <input type="number" value="1" min="1" class="w-16 text-center border-none bg-transparent font-semibold" id="quantity-acai-havaianos" readonly>
+                        <button class="quantity-control-btn plus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-havaianos">+</button>
+                    </div>
+                    <button class="btn-primary text-white font-bold py-3 px-6 rounded-full add-to-cart-btn shadow-lg" data-name="Açaí Havaianos" data-price="25.00" data-quantity-id="quantity-acai-havaianos">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-4">
+                <img src="Açaí Pingo Grosso de Morango.jpg" alt="Açaí Pingo Grosso de Morango" class="rounded-lg shadow-md">
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-2">Açaí Pingo Grosso de Morango</h3>
+                    <p class="text-gray-700 mb-3 leading-relaxed">Açaí, granola, banana, maçã, morango, creme de leite, cobertura de leite condensado e morango.</p>
+                    <p class="text-xl text-gray-700 font-semibold">A partir de R$ 25,00</p>
+                </div>
+                <div class="quantity-controls flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center bg-gray-100 rounded-full shadow-md">
+                        <button class="quantity-control-btn minus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-pingo-morango">-</button>
+                        <input type="number" value="1" min="1" class="w-16 text-center border-none bg-transparent font-semibold" id="quantity-acai-pingo-morango" readonly>
+                        <button class="quantity-control-btn plus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-pingo-morango">+</button>
+                    </div>
+                    <button class="btn-primary text-white font-bold py-3 px-6 rounded-full add-to-cart-btn shadow-lg" data-name="Açaí Pingo Grosso de Morango" data-price="25.00" data-quantity-id="quantity-acai-pingo-morango">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-4">
+                <img src="Açaí Pingo Grosso Kiwi.jpg" alt="Açaí Pingo Grosso Kiwi" class="rounded-lg shadow-md">
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-2">Açaí Pingo Grosso Kiwi</h3>
+                    <p class="text-gray-700 mb-3 leading-relaxed">Açaí, granola, banana, maçã, kiwi, creme de leite, cobertura de leite condensado e morango.</p>
+                    <p class="text-xl text-gray-700 font-semibold">A partir de R$ 25,00</p>
+                </div>
+                <div class="quantity-controls flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center bg-gray-100 rounded-full shadow-md">
+                        <button class="quantity-control-btn minus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-pingo-kiwi">-</button>
+                        <input type="number" value="1" min="1" class="w-16 text-center border-none bg-transparent font-semibold" id="quantity-acai-pingo-kiwi" readonly>
+                        <button class="quantity-control-btn plus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-pingo-kiwi">+</button>
+                    </div>
+                    <button class="btn-primary text-white font-bold py-3 px-6 rounded-full add-to-cart-btn shadow-lg" data-name="Açaí Pingo Grosso Kiwi" data-price="25.00" data-quantity-id="quantity-acai-pingo-kiwi">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-4">
+                <img src="Açaí Sensação.jpg" alt="Açaí Sensação" class="rounded-lg shadow-md">
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-2">Açaí Sensação</h3>
+                    <p class="text-gray-700 mb-3 leading-relaxed">Açaí, leite em pó, leite condensado, raspas de chocolate, morango e cobertura de morango.</p>
+                    <p class="text-xl text-gray-700 font-semibold">A partir de R$ 25,00</p>
+                </div>
+                <div class="quantity-controls flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center bg-gray-100 rounded-full shadow-md">
+                        <button class="quantity-control-btn minus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-sensacao">-</button>
+                        <input type="number" value="1" min="1" class="w-16 text-center border-none bg-transparent font-semibold" id="quantity-acai-sensacao" readonly>
+                        <button class="quantity-control-btn plus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-sensacao">+</button>
+                    </div>
+                    <button class="btn-primary text-white font-bold py-3 px-6 rounded-full add-to-cart-btn shadow-lg" data-name="Açaí Sensação" data-price="25.00" data-quantity-id="quantity-acai-sensacao">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-4">
+                <img src="Açaí Torpedo.jpg" alt="Açaí Torpedo" class="rounded-lg shadow-md">
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-2">Açaí Torpedo</h3>
+                    <p class="text-gray-700 mb-3 leading-relaxed">Açaí, leite em pó, banana, amendoim, castanha de caju e mel.</p>
+                    <p class="text-xl text-gray-700 font-semibold">A partir de R$ 25,00</p>
+                </div>
+                <div class="quantity-controls flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center bg-gray-100 rounded-full shadow-md">
+                        <button class="quantity-control-btn minus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-torpedo">-</button>
+                        <input type="number" value="1" min="1" class="w-16 text-center border-none bg-transparent font-semibold" id="quantity-acai-torpedo" readonly>
+                        <button class="quantity-control-btn plus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-torpedo">+</button>
+                    </div>
+                    <button class="btn-primary text-white font-bold py-3 px-6 rounded-full add-to-cart-btn shadow-lg" data-name="Açaí Torpedo" data-price="25.00" data-quantity-id="quantity-acai-torpedo">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-4">
+                <img src="Açaí Três Leites.jpg"Açaí Três Leites" class="rounded-lg shadow-md">
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-purple-800 mb-2">Açaí Três Leites</h3>
+                    <p class="text-gray-700 mb-3 leading-relaxed">Açaí, leite em pó, leite condensado e creme de leite.</p>
+                    <p class="text-xl text-gray-700 font-semibold">A partir de R$ 25,00</p>
+                </div>
+                <div class="quantity-controls flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center bg-gray-100 rounded-full shadow-md">
+                        <button class="quantity-control-btn minus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-tres-leites">-</button>
+                        <input type="number" value="1" min="1" class="w-16 text-center border-none bg-transparent font-semibold" id="quantity-acai-tres-leites" readonly>
+                        <button class="quantity-control-btn plus bg-gray-200 text-gray-800 font-bold py-2 px-3 rounded-full" data-target="quantity-acai-tres-leites">+</button>
+                    </div>
+                    <button class="btn-primary text-white font-bold py-3 px-6 rounded-full add-to-cart-btn shadow-lg" data-name="Açaí Três Leites" data-price="25.00" data-quantity-id="quantity-acai-tres-leites">
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-center mt-8">
+            <button id="showCartButton" class="bg-green-600 text-white font-bold py-4 px-8 rounded-full shadow-lg">
+                <span class="mr-2">🛒</span>Ir para o Carrinho
+            </button>
+        </div>
+    </main>
+
+    <section id="cartSection" class="w-full max-w-4xl bg-white p-8 rounded-xl shadow-acai border-2 border-purple-200 hidden">
+        <h3 class="text-3xl font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
+            <span class="mr-3">🛒</span>Seu Carrinho
+        </h3>
+        <p class="text-gray-500 text-center mb-6 text-lg" id="emptyCartMessage">Seu carrinho está vazio.</p>
+        <div id="cartItems" class="mb-6 space-y-4"></div>
+        <div class="flex justify-between items-center border-t-2 border-purple-200 pt-6">
+            <p class="text-2xl font-bold text-gray-800">Total:</p>
+            <p class="text-2xl font-bold text-green-600" id="cartTotal">R$ 0,00</p>
+        </div>
+        <div class="flex flex-col md:flex-row justify-center gap-4 mt-8">
+            <button id="clearCartButton" class="bg-red-500 text-white font-bold py-3 px-6 rounded-full shadow-lg">
+                <span class="mr-2">🗑️</span>Limpar Carrinho
+            </button>
+            <button id="checkoutButton" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg">
+                <span class="mr-2">✅</span>Finalizar Pedido
+            </button>
+        </div>
+    </section>
+
+    <footer class="w-full max-w-6xl bg-acai-purple text-white p-8 rounded-xl shadow-acai text-center mt-6">
+    <h2 class="text-3xl md:text-4xl font-bold text-acai-yellow mb-6">Entrega e Retirada</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-4 bg-white bg-opacity-10 p-4 rounded-xl">
+            <div class="flex items-center justify-center w-12 h-12 bg-acai-yellow rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+            </div>
+            <div class="text-center md:text-left">
+                <p class="text-sm opacity-80">Delivery</p>
+                <p class="text-xl font-bold">(69) 99202-0080</p>
+            </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-4 bg-white bg-opacity-10 p-4 rounded-xl">
+            <div class="flex items-center justify-center w-12 h-12 bg-acai-yellow rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </div>
+            <div class="text-center md:text-left">
+                <p class="text-sm opacity-80">Endereço</p>
+                <p class="text-lg font-bold">Av. Jorge Teixeira – espaço alternativo</p>
+                <p class="text-sm opacity-90">Porto Velho - RO</p>
+            </div>
+        </div>
+    </div>
+    </footer>
+
+    <script>
+        // Array para armazenar os itens do carrinho
+        let cart = [];
+        let selectedOrderType = '';
+
+        // Função para exibir o modal
+        function showModal(message) {
+            const modal = document.getElementById('messageModal');
+            const modalMessage = document.getElementById('modalMessage');
+            
+            modalMessage.innerText = message;
+            modal.classList.add('show');
+            modal.style.display = 'flex';
+        }
+
+        // Função para fechar o modal
+        function closeModal() {
+            const modal = document.getElementById('messageModal');
+            modal.classList.remove('show');
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 200);
+        }
+
+        // Fechar modal ao clicar fora dele
+        document.getElementById('messageModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('messageModal')) {
+                closeModal();
+            }
+        });
+
+        // Fechar modal com tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Funções para controlar a visibilidade das seções
+        function hideAllSections() {
+            const sections = ['initialOptionsSection', 'menuSelectionSection', 'cartSection'];
+            sections.forEach(sectionId => {
+                document.getElementById(sectionId).classList.add('hidden');
+            });
+        }
+
+        function showSection(sectionId) {
+            hideAllSections();
+            const section = document.getElementById(sectionId);
+            section.classList.remove('hidden');
+            
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Função para adicionar item ao carrinho
+        function addToCart(name, price, quantity = 1) {
+            const existingItemIndex = cart.findIndex(item => item.name === name);
+
+            if (existingItemIndex > -1) {
+                cart[existingItemIndex].quantity += quantity;
+            } else {
+                cart.push({ name, price, quantity });
+            }
+            
+            updateCartDisplay();
+        }
+
+        // Função para atualizar quantidade de item no carrinho
+        function updateCartItemQuantity(name, change) {
+            const itemIndex = cart.findIndex(item => item.name === name);
+            if (itemIndex > -1) {
+                const oldQuantity = cart[itemIndex].quantity;
+                cart[itemIndex].quantity += change;
+                
+                if (cart[itemIndex].quantity <= 0) {
+                    cart.splice(itemIndex, 1);
+                    showModal(`${name} removido do carrinho.`);
+                } else if (change > 0) {
+                    showModal(`Quantidade aumentada: ${cart[itemIndex].quantity}x ${name}`);
+                } else {
+                    showModal(`Quantidade diminuída: ${cart[itemIndex].quantity}x ${name}`);
+                }
+            }
+            updateCartDisplay();
+        }
+
+        // Função para atualizar a exibição do carrinho
+        function updateCartDisplay() {
+            const cartItemsContainer = document.getElementById('cartItems');
+            const cartTotalElement = document.getElementById('cartTotal');
+            const emptyCartMessage = document.getElementById('emptyCartMessage');
+            let total = 0;
+
+            cartItemsContainer.innerHTML = '';
+
+            if (cart.length === 0) {
+                emptyCartMessage.style.display = 'block';
+            } else {
+                emptyCartMessage.style.display = 'none';
+                
+                cart.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.classList.add('bg-white', 'p-4', 'rounded-xl', 'shadow-md', 'border', 'border-purple-200');
+                    itemElement.innerHTML = `
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div class="flex-grow text-center md:text-left">
+                                <h4 class="text-lg font-bold text-gray-800">${item.name}</h4>
+                                <p class="text-gray-600">R$ ${item.price.toFixed(2).replace('.', ',')} cada</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center bg-gray-100 rounded-full">
+                                    <button class="bg-red-400 text-white text-sm py-2 px-3 rounded-full quantity-btn" data-name="${item.name}" data-change="-1">-</button>
+                                    <span class="px-4 text-gray-800 font-bold">×${item.quantity}</span>
+                                    <button class="bg-green-400 text-white text-sm py-2 px-3 rounded-full quantity-btn" data-name="${item.name}" data-change="1">+</button>
+                                </div>
+                                <span class="text-lg font-bold text-green-600 min-w-20">R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}</span>
+                                <button class="bg-red-500 text-white text-sm py-2 px-3 rounded-full remove-item-btn" data-name="${item.name}">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    cartItemsContainer.appendChild(itemElement);
+                    total += item.price * item.quantity;
+                });
+            }
+
+            cartTotalElement.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+            // Event listeners para botões do carrinho
+            document.querySelectorAll('.quantity-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const itemName = event.target.dataset.name;
+                    const change = parseInt(event.target.dataset.change);
+                    updateCartItemQuantity(itemName, change);
+                });
+            });
+
+            document.querySelectorAll('.remove-item-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const itemName = event.target.dataset.name;
+                    const itemIndex = cart.findIndex(item => item.name === itemName);
+                    if (itemIndex > -1) {
+                        cart.splice(itemIndex, 1);
+                        updateCartDisplay();
+                        showModal(`${itemName} removido completamente do carrinho.`);
+                    }
+                });
+            });
+        }
+
+        // Event listeners para navegação
+        document.getElementById('deliveryButton').addEventListener('click', () => {
+            selectedOrderType = 'delivery';
+            showSection('menuSelectionSection');
+        });
+
+        document.getElementById('pickupButton').addEventListener('click', () => {
+            selectedOrderType = 'pickup';
+            showSection('menuSelectionSection');
+        });
+
+        // Event listeners para controle de quantidade no menu
+        document.querySelectorAll('.quantity-control-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const targetId = event.target.dataset.target;
+                const input = document.getElementById(targetId);
+                let quantity = parseInt(input.value, 10);
+
+                if (event.target.classList.contains('plus')) {
+                    quantity = Math.min(quantity + 1, 99); // Limite máximo
+                } else if (event.target.classList.contains('minus') && quantity > 1) {
+                    quantity -= 1;
+                }
+                
+                input.value = quantity;
+            });
+        });
+
+        // Event listeners para adicionar ao carrinho
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const name = event.target.dataset.name;
+                const price = parseFloat(event.target.dataset.price);
+                const quantityId = event.target.dataset.quantityId;
+                const quantity = parseInt(document.getElementById(quantityId).value, 10);
+
+                if (quantity > 0) {
+                    // Animação de carregamento no botão
+                    const originalText = event.target.innerHTML;
+                    event.target.innerHTML = 'Adicionando...';
+                    event.target.disabled = true;
+                    
+                    setTimeout(() => {
+                        addToCart(name, price, quantity);
+                        event.target.innerHTML = originalText;
+                        event.target.disabled = false;
+                        // Reset quantidade para 1
+                        document.getElementById(quantityId).value = 1;
+                    }, 500);
+                } else {
+                    showModal('Por favor, selecione uma quantidade válida (maior que zero).');
+                }
+            });
+        });
+
+        // Event listener para mostrar carrinho
+        document.getElementById('showCartButton').addEventListener('click', () => {
+            showSection('cartSection');
+        });
+
+        // Event listener para limpar carrinho
+        document.getElementById('clearCartButton').addEventListener('click', () => {
+            if (cart.length > 0) {
+                if (confirm('Tem certeza que deseja limpar todo o carrinho?')) {
+                    cart = [];
+                    updateCartDisplay();
+                    showModal('Carrinho limpo com sucesso!');
+                    setTimeout(() => {
+                        showSection('initialOptionsSection');
+                    }, 2000);
+                }
+            } else {
+                showModal('O carrinho já está vazio.');
+            }
+        });
+
+        // Event listener para finalizar pedido
+        document.getElementById('checkoutButton').addEventListener('click', () => {
+            if (cart.length === 0) {
+                showModal('Seu carrinho está vazio. Adicione itens antes de finalizar o pedido.');
+                return;
+            }
+
+            let orderSummary = `Seu pedido foi finalizado com sucesso! Entraremos em contato em breve para confirmar.`;
+            showModal(orderSummary);
+            
+            // Limpa o carrinho e volta para a tela inicial após 2 segundos
+            setTimeout(() => {
+                cart = [];
+                updateCartDisplay();
+                showSection('initialOptionsSection');
+            }, 2000);
+        });
+
+        // Inicializar aplicação
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection('initialOptionsSection');
+            updateCartDisplay();
+        });
+
+        // Adicionar funcionalidade de voltar com tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const currentSection = document.querySelector('section:not(.hidden), main:not(.hidden)');
+                if (currentSection) {
+                    const sectionId = currentSection.id;
+                    if (sectionId === 'cartSection') {
+                        showSection('menuSelectionSection');
+                    } else if (sectionId === 'menuSelectionSection') {
+                        showSection('initialOptionsSection');
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
